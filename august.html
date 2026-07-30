@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Kantong Jalan-Jalan 🎒</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink: #ff8fb3;
+    --pink-soft: #ffd6e6;
+    --pink-deep: #e0447a;
+    --blue: #6fc3f7;
+    --blue-soft: #cdeeff;
+    --blue-deep: #2f7ab8;
+    --mint: #7de3c8;
+    --mint-deep: #1a9c7c;
+    --cream: #fffaf7;
+    --ink: #3a2e3d;
+    --ink-soft: #8a7d8e;
+    --radius: 20px;
+    --shadow: 0 8px 24px rgba(224,68,122,0.12);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0;
+    font-family:'Nunito',sans-serif;
+    background:
+      radial-gradient(circle at 15% 0%, var(--pink-soft) 0%, transparent 45%),
+      radial-gradient(circle at 90% 10%, var(--blue-soft) 0%, transparent 40%),
+      var(--cream);
+    color:var(--ink);
+    min-height:100vh;
+    padding-bottom:90px;
+  }
+  h1,h2,h3, .display{font-family:'Fredoka',sans-serif;}
+  .wrap{max-width:480px; margin:0 auto; padding:18px 16px 0;}
+
+  /* HEADER / JAR */
+  .header{
+    background:linear-gradient(135deg, var(--pink) 0%, var(--pink-deep) 100%);
+    border-radius:24px;
+    padding:20px 20px 18px;
+    color:white;
+    box-shadow:var(--shadow);
+    position:relative;
+    overflow:hidden;
+  }
+  .header::after{
+    content:"";
+    position:absolute; right:-30px; top:-30px;
+    width:120px; height:120px; border-radius:50%;
+    background:rgba(255,255,255,0.12);
+  }
+  .header-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;}
+  .app-title{font-size:19px; font-weight:600; margin:0; display:flex; align-items:center; gap:6px;}
+  .sync-dot{width:9px; height:9px; border-radius:50%; background:#ffe27a; box-shadow:0 0 0 3px rgba(255,226,122,0.35);}
+  .sync-dot.on{background:#8dffc4; box-shadow:0 0 0 3px rgba(141,255,196,0.35);}
+  .sisa-label{font-size:12.5px; opacity:0.9; font-weight:700; letter-spacing:0.3px; text-transform:uppercase;}
+  .sisa-amount{font-size:34px; font-weight:700; margin:2px 0 12px; font-family:'Fredoka',sans-serif;}
+  .jar{
+    background:rgba(255,255,255,0.22);
+    border-radius:14px;
+    height:14px;
+    overflow:hidden;
+    position:relative;
+  }
+  .jar-fill{
+    height:100%;
+    background:linear-gradient(90deg, #8dffc4, #ffe27a);
+    border-radius:14px;
+    transition:width .5s ease;
+  }
+  .jar-caption{display:flex; justify-content:space-between; font-size:11.5px; margin-top:6px; opacity:0.9; font-weight:700;}
+
+  /* NAV */
+  .nav{
+    position:fixed; bottom:0; left:0; right:0;
+    background:white;
+    box-shadow:0 -6px 20px rgba(224,68,122,0.12);
+    display:flex;
+    padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+    z-index:50;
+  }
+  .nav button{
+    flex:1; background:none; border:none; padding:8px 2px;
+    font-family:'Nunito',sans-serif; font-weight:800; font-size:11px;
+    color:var(--ink-soft); display:flex; flex-direction:column; align-items:center; gap:3px;
+    border-radius:14px; cursor:pointer;
+  }
+  .nav button .ic{font-size:20px;}
+  .nav button.active{color:var(--pink-deep); background:var(--pink-soft);}
+
+  /* CARDS */
+  .card{
+    background:white; border-radius:var(--radius); padding:16px; margin-top:14px;
+    box-shadow:var(--shadow);
+  }
+  .card h2{margin:0 0 12px; font-size:16px; display:flex; align-items:center; gap:7px;}
+  label{font-size:12.5px; font-weight:800; color:var(--ink-soft); display:block; margin:10px 0 4px; text-transform:uppercase; letter-spacing:.3px;}
+  label:first-child{margin-top:0;}
+  input, select, textarea{
+    width:100%; padding:11px 12px; border-radius:12px; border:2px solid #f1e3ea;
+    font-family:'Nunito',sans-serif; font-size:14.5px; font-weight:600; color:var(--ink);
+    background:#fffdfb;
+  }
+  input:focus, select:focus, textarea:focus{outline:none; border-color:var(--pink);}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .btn{
+    margin-top:16px; width:100%; padding:13px; border:none; border-radius:14px;
+    font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; cursor:pointer;
+    background:linear-gradient(135deg, var(--pink), var(--pink-deep)); color:white;
+    box-shadow:0 6px 14px rgba(224,68,122,0.3);
+  }
+  .btn.blue{background:linear-gradient(135deg, var(--blue), var(--blue-deep)); box-shadow:0 6px 14px rgba(47,122,184,0.3);}
+  .btn.ghost{background:#f6eef1; color:var(--pink-deep); box-shadow:none;}
+  .btn.small{margin-top:0; width:auto; padding:8px 14px; font-size:12.5px;}
+
+  /* LIST ITEMS */
+  .entry{
+    display:flex; align-items:center; gap:10px;
+    padding:11px 4px; border-bottom:1px solid #f4e9ee;
+  }
+  .entry:last-child{border-bottom:none;}
+  .entry .tag{
+    width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+    font-size:18px; flex-shrink:0;
+  }
+  .entry .info{flex:1; min-width:0;}
+  .entry .info .t1{font-weight:800; font-size:13.5px; display:flex; gap:6px; align-items:baseline;}
+  .entry .info .t2{font-size:11.5px; color:var(--ink-soft); font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .entry .amt{font-weight:800; font-size:14px; text-align:right; white-space:nowrap;}
+  .entry .actions{display:flex; align-items:center; flex-shrink:0;}
+  .entry .edit, .entry .del{background:none; border:none; font-size:15px; padding:4px 6px; cursor:pointer;}
+  .entry .edit{color:var(--blue-deep);}
+  .entry .del{color:#d99;}
+  .entry.editing{background:#fff6f9; border-radius:12px; box-shadow:0 0 0 2px var(--pink-soft) inset;}
+  .empty{text-align:center; padding:26px 10px; color:var(--ink-soft); font-weight:700; font-size:13px;}
+  .form-actions{display:flex; gap:8px;}
+  .form-actions .btn{flex:1;}
+  .edit-banner{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--blue-soft); color:var(--blue-deep); font-weight:800; font-size:12px;
+    padding:8px 12px; border-radius:12px; margin-bottom:10px;
+  }
+  .edit-banner button{background:none; border:none; color:var(--blue-deep); font-weight:800; font-size:12px; text-decoration:underline; cursor:pointer;}
+
+  /* CHARTS */
+  .top-row{display:flex; align-items:center; gap:10px; margin-top:9px;}
+  .top-row .rank{
+    width:24px; height:24px; border-radius:50%; background:var(--pink-soft); color:var(--pink-deep);
+    display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:800; flex-shrink:0;
+  }
+  .top-row .info{flex:1; min-width:0;}
+  .top-row .info .t1{font-size:13px; font-weight:800;}
+  .top-row .info .t2{font-size:11px; color:var(--ink-soft); font-weight:700;}
+  .top-row .vl{font-size:13.5px; font-weight:800; color:var(--pink-deep); white-space:nowrap;}
+
+  .barchart{display:flex; align-items:flex-end; gap:8px; height:140px; margin-top:14px; overflow-x:auto; padding-bottom:2px;}
+  .barchart .bcol{display:flex; flex-direction:column; align-items:center; gap:5px; flex-shrink:0; width:38px;}
+  .barchart .bwrap{height:100px; display:flex; align-items:flex-end;}
+  .barchart .bfill{width:22px; border-radius:7px 7px 3px 3px; background:linear-gradient(180deg, var(--blue), var(--blue-deep)); min-height:4px;}
+  .barchart .blabel{font-size:9.5px; font-weight:800; color:var(--ink-soft); text-align:center; white-space:nowrap;}
+  .barchart .bval{font-size:9px; font-weight:800; color:var(--blue-deep);}
+
+  .donut-wrap{display:flex; align-items:center; gap:16px; margin-top:8px;}
+  .donut-legend{flex:1; min-width:0;}
+  .donut-legend .lg-row{display:flex; align-items:center; gap:7px; font-size:12px; font-weight:700; margin-bottom:6px;}
+  .donut-legend .lg-dot{width:9px; height:9px; border-radius:50%; flex-shrink:0;}
+  .donut-legend .lg-pct{margin-left:auto; color:var(--ink-soft); font-weight:800;}
+
+  /* RECAP */
+  .stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .stat-box{border-radius:16px; padding:14px; text-align:center;}
+  .stat-box.in{background:var(--mint); color:#0a4636;}
+  .stat-box.out{background:var(--blue-soft); color:var(--blue-deep);}
+  .stat-box .lbl{font-size:11px; font-weight:800; text-transform:uppercase; opacity:0.85;}
+  .stat-box .val{font-family:'Fredoka',sans-serif; font-size:19px; font-weight:600; margin-top:3px;}
+
+  .src-row{margin-top:10px;}
+  .src-row .head{display:flex; justify-content:space-between; font-size:12.5px; font-weight:800; margin-bottom:5px;}
+  .src-row .bar{height:10px; border-radius:8px; background:#f1e6ec; overflow:hidden; display:flex;}
+  .src-row .bar .used{background:linear-gradient(90deg,var(--pink),var(--pink-deep)); height:100%;}
+  .src-row .sub{font-size:11px; color:var(--ink-soft); font-weight:700; margin-top:3px;}
+
+  .cat-row{display:flex; align-items:center; gap:8px; margin-top:9px;}
+  .cat-row .dot{width:9px; height:9px; border-radius:50%; flex-shrink:0;}
+  .cat-row .nm{flex:1; font-size:13px; font-weight:700;}
+  .cat-row .vl{font-size:13px; font-weight:800;}
+
+  .badge{display:inline-block; font-size:10.5px; font-weight:800; padding:2px 8px; border-radius:20px;}
+  .subtle-btn{background:none;border:none;color:var(--blue-deep);font-weight:800;font-size:12px;text-decoration:underline;cursor:pointer;padding:0;}
+  .helptext{font-size:11.5px; color:var(--ink-soft); font-weight:700; line-height:1.5; margin-top:6px;}
+  .toast{
+    position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:white; padding:10px 18px; border-radius:30px;
+    font-size:13px; font-weight:700; opacity:0; transition:.3s; pointer-events:none; z-index:100;
+    white-space:nowrap;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .page{display:none;}
+  .page.active{display:block;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="header">
+    <div class="header-top">
+      <p class="app-title">🎒 Kantong Jalan-Jalan</p>
+      <span id="syncDot" class="sync-dot" title="Cloud sync belum aktif"></span>
+    </div>
+    <div class="sisa-label">Sisa Uang</div>
+    <div class="sisa-amount" id="sisaTotal">Rp 0</div>
+    <div class="jar"><div class="jar-fill" id="jarFill" style="width:0%"></div></div>
+    <div class="jar-caption">
+      <span id="capIn">Masuk Rp 0</span>
+      <span id="capOut">Kepake Rp 0</span>
+    </div>
+  </div>
+
+  <!-- INCOME PAGE -->
+  <div class="page" id="page-income">
+    <div class="card">
+      <h2 id="in-form-title">💌 Tambah Income</h2>
+      <div class="edit-banner" id="in-edit-banner" style="display:none;">
+        <span>✏️ Lagi edit income</span>
+        <button onclick="cancelEditIncome()">Batal</button>
+      </div>
+      <label>Tanggal</label>
+      <input type="date" id="in-date">
+      <label>Sumber Uang</label>
+      <select id="in-source">
+        <option>Papa</option><option>Mama</option><option>Eldi</option><option>Koko</option>
+      </select>
+      <label>Jumlah (Rp)</label>
+      <input type="number" id="in-amount" placeholder="cth: 2000000">
+      <label>Keterangan (opsional)</label>
+      <input type="text" id="in-note" placeholder="cth: transfer awal buat trip">
+      <button class="btn" id="in-submit-btn" onclick="addIncome()">+ Simpan Income</button>
+    </div>
+    <div class="card">
+      <h2>📋 Riwayat Income</h2>
+      <div id="incomeList"></div>
+    </div>
+  </div>
+
+  <!-- OUTCOME PAGE -->
+  <div class="page" id="page-outcome">
+    <div class="card">
+      <h2 id="out-form-title">🧾 Tambah Outcome</h2>
+      <div class="edit-banner" id="out-edit-banner" style="display:none;">
+        <span>✏️ Lagi edit outcome</span>
+        <button onclick="cancelEditOutcome()">Batal</button>
+      </div>
+      <label>Tanggal</label>
+      <input type="date" id="out-date">
+      <div class="row2">
+        <div>
+          <label>Kategori</label>
+          <select id="out-category">
+            <option value="FnB">🍔 FnB</option>
+            <option value="Akomodasi">🏨 Akomodasi</option>
+            <option value="Transportasi">🚗 Transportasi</option>
+            <option value="Entertainment">🎡 Entertainment</option>
+            <option value="Lainnya">✨ Lainnya</option>
+          </select>
+        </div>
+        <div>
+          <label>Sumber Uang</label>
+          <select id="out-source">
+            <option>Papa</option><option>Mama</option><option>Eldi</option><option>Koko</option>
+          </select>
+        </div>
+      </div>
+      <label>Jumlah (Rp)</label>
+      <input type="number" id="out-amount" placeholder="cth: 150000">
+      <label>Keterangan</label>
+      <input type="text" id="out-note" placeholder="cth: makan KFC berdua">
+      <button class="btn blue" id="out-submit-btn" onclick="addOutcome()">+ Simpan Outcome</button>
+    </div>
+    <div class="card">
+      <h2>📋 Riwayat Outcome</h2>
+      <div id="outcomeList"></div>
+    </div>
+  </div>
+
+  <!-- RECAP PAGE -->
+  <div class="page" id="page-recap">
+    <div class="card">
+      <h2>📊 Ringkasan</h2>
+      <div class="stat-grid">
+        <div class="stat-box in"><div class="lbl">Total Income</div><div class="val" id="rcIn">Rp 0</div></div>
+        <div class="stat-box out"><div class="lbl">Total Outcome</div><div class="val" id="rcOut">Rp 0</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>👛 Sisa per Sumber</h2>
+      <div id="perSource"></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS PAGE -->
+  <div class="page" id="page-settings">
+    <div class="card">
+      <h2>☁️ Cloud Sync (biar bisa dibuka di HP lain)</h2>
+      <p class="helptext">Data otomatis kesimpen di browser ini (localStorage). Biar bisa kebuka di HP/device lain dan angkanya sama, pakai <b>JSONBin.io</b> (gratis). Caranya: buat akun di jsonbin.io → buat Bin baru → copy Bin ID & Master/Access Key ke bawah ini. Isi di semua device yang mau dipakai, pakai Bin ID yang sama.</p>
+      <label>Bin ID</label>
+      <input type="text" id="cfg-binid" placeholder="cth: 64f1a2b3...">
+      <label>X-Access-Key</label>
+      <input type="text" id="cfg-key" placeholder="paste access key kamu">
+      <button class="btn" onclick="saveCloudConfig()">💾 Simpan Setelan</button>
+      <div class="row2" style="margin-top:12px;">
+        <button class="btn ghost small" onclick="pushCloud()">⬆️ Push (kirim data)</button>
+        <button class="btn ghost small" onclick="pullCloud()">⬇️ Pull (ambil data)</button>
+      </div>
+      <p class="helptext" id="lastSync">Belum pernah sync.</p>
+    </div>
+    <div class="card">
+      <h2>🗂️ Backup Manual</h2>
+      <p class="helptext">Kalau males pakai cloud sync, bisa export/import file .json manual buat pindah data antar device.</p>
+      <div class="row2">
+        <button class="btn ghost small" onclick="exportJSON()">⬇️ Export JSON</button>
+        <label class="btn ghost small" style="text-align:center;">
+          ⬆️ Import JSON
+          <input type="file" accept=".json" onchange="importJSON(event)" style="display:none;">
+        </label>
+      </div>
+    </div>
+    <div class="card">
+      <h2>⚠️ Reset Data</h2>
+      <p class="helptext">Hapus semua data income & outcome di device ini. Nggak bisa dibalikin kecuali ada backup.</p>
+      <button class="btn ghost small" onclick="resetData()">🗑️ Hapus Semua Data</button>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <button data-page="income" class="active" onclick="showPage('income')"><span class="ic">💌</span>Income</button>
+  <button data-page="outcome" onclick="showPage('outcome')"><span class="ic">🧾</span>Outcome</button>
+  <button data-page="recap" onclick="showPage('recap')"><span class="ic">📊</span>Recap</button>
+  <button data-page="settings" onclick="showPage('settings')"><span class="ic">⚙️</span>Setelan</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SOURCE_ICON = {Papa:'👨', Mama:'👩', Eldi:'🧑', Koko:'🧑‍🦱'};
+const SOURCE_COLOR = {Papa:'#ffd6e6', Mama:'#cdeeff', Eldi:'#d8f5e3', Koko:'#ffe9c7'};
+const CAT_ICON = {FnB:'🍔', Akomodasi:'🏨', Transportasi:'🚗', Entertainment:'🎡', Lainnya:'✨'};
+const CAT_COLOR = {FnB:'#ff8fb3', Akomodasi:'#6fc3f7', Transportasi:'#7de3c8', Entertainment:'#ffcf6f', Lainnya:'#c39bd3'};
+
+let data = { incomes: [], outcomes: [] };
+let editingIncomeId = null;
+let editingOutcomeId = null;
+
+function loadData(){
+  const raw = localStorage.getItem('kantongJalanData');
+  if(raw){
+    try{ data = JSON.parse(raw); }catch(e){ data = {incomes:[], outcomes:[]}; }
+  } else {
+    // seed data awal biar langsung ada contoh
+    data = {
+      incomes: [
+        {id: genId(), date: todayStr(), source:'Papa', amount:2000000, note:'Transfer awal buat trip'},
+        {id: genId(), date: todayStr(), source:'Papa', amount:500000, note:'Transfer ke Koko buat sewa mobil'}
+      ],
+      outcomes: [
+        {id: genId(), date: todayStr(), category:'Akomodasi', amount:920000, note:'Hotel', source:'Papa'},
+        {id: genId(), date: todayStr(), category:'Transportasi', amount:500000, note:'Sewa mobil (lewat Koko)', source:'Papa'}
+      ]
+    };
+    saveData();
+  }
+}
+function saveData(){
+  localStorage.setItem('kantongJalanData', JSON.stringify(data));
+  render();
+}
+function genId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function rupiah(n){ return 'Rp ' + Math.round(n).toLocaleString('id-ID'); }
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+function showPage(p){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active', b.dataset.page===p));
+}
+
+function addIncome(){
+  const date = document.getElementById('in-date').value || todayStr();
+  const source = document.getElementById('in-source').value;
+  const amount = parseFloat(document.getElementById('in-amount').value);
+  const note = document.getElementById('in-note').value.trim();
+  if(!amount || amount<=0){ showToast('Isi jumlahnya dulu ya 🙏'); return; }
+
+  if(editingIncomeId){
+    const item = data.incomes.find(x=>x.id===editingIncomeId);
+    if(item){ item.date=date; item.source=source; item.amount=amount; item.note=note; }
+    cancelEditIncome();
+    saveData();
+    showToast('Income ke-update ✏️✅');
+    return;
+  }
+
+  data.incomes.unshift({id:genId(), date, source, amount, note});
+  document.getElementById('in-amount').value='';
+  document.getElementById('in-note').value='';
+  saveData();
+  showToast('Income kesimpen ✅');
+}
+function addOutcome(){
+  const date = document.getElementById('out-date').value || todayStr();
+  const category = document.getElementById('out-category').value;
+  const source = document.getElementById('out-source').value;
+  const amount = parseFloat(document.getElementById('out-amount').value);
+  const note = document.getElementById('out-note').value.trim();
+  if(!amount || amount<=0){ showToast('Isi jumlahnya dulu ya 🙏'); return; }
+
+  if(editingOutcomeId){
+    const item = data.outcomes.find(x=>x.id===editingOutcomeId);
+    if(item){ item.date=date; item.category=category; item.source=source; item.amount=amount; item.note=note; }
+    cancelEditOutcome();
+    saveData();
+    showToast('Outcome ke-update ✏️✅');
+    return;
+  }
+
+  data.outcomes.unshift({id:genId(), date, category, amount, note, source});
+  document.getElementById('out-amount').value='';
+  document.getElementById('out-note').value='';
+  saveData();
+  showToast('Outcome kesimpen ✅');
+}
+function delIncome(id){
+  if(editingIncomeId===id) cancelEditIncome();
+  data.incomes = data.incomes.filter(x=>x.id!==id);
+  saveData();
+}
+function delOutcome(id){
+  if(editingOutcomeId===id) cancelEditOutcome();
+  data.outcomes = data.outcomes.filter(x=>x.id!==id);
+  saveData();
+}
+
+function editIncome(id){
+  const item = data.incomes.find(x=>x.id===id);
+  if(!item) return;
+  editingIncomeId = id;
+  document.getElementById('in-date').value = item.date;
+  document.getElementById('in-source').value = item.source;
+  document.getElementById('in-amount').value = item.amount;
+  document.getElementById('in-note').value = item.note || '';
+  document.getElementById('in-form-title').textContent = '✏️ Edit Income';
+  document.getElementById('in-edit-banner').style.display = 'flex';
+  document.getElementById('in-submit-btn').textContent = '💾 Update Income';
+  showPage('income');
+  render();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function cancelEditIncome(){
+  editingIncomeId = null;
+  document.getElementById('in-date').value = todayStr();
+  document.getElementById('in-amount').value = '';
+  document.getElementById('in-note').value = '';
+  document.getElementById('in-form-title').textContent = '💌 Tambah Income';
+  document.getElementById('in-edit-banner').style.display = 'none';
+  document.getElementById('in-submit-btn').textContent = '+ Simpan Income';
+  render();
+}
+function editOutcome(id){
+  const item = data.outcomes.find(x=>x.id===id);
+  if(!item) return;
+  editingOutcomeId = id;
+  document.getElementById('out-date').value = item.date;
+  document.getElementById('out-category').value = item.category;
+  document.getElementById('out-source').value = item.source;
+  document.getElementById('out-amount').value = item.amount;
+  document.getElementById('out-note').value = item.note || '';
+  document.getElementById('out-form-title').textContent = '✏️ Edit Outcome';
+  document.getElementById('out-edit-banner').style.display = 'flex';
+  document.getElementById('out-submit-btn').textContent = '💾 Update Outcome';
+  showPage('outcome');
+  render();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function cancelEditOutcome(){
+  editingOutcomeId = null;
+  document.getElementById('out-date').value = todayStr();
+  document.getElementById('out-amount').value = '';
+  document.getElementById('out-note').value = '';
+  document.getElementById('out-form-title').textContent = '🧾 Tambah Outcome';
+  document.getElementById('out-edit-banner').style.display = 'none';
+  document.getElementById('out-submit-btn').textContent = '+ Simpan Outcome';
+  render();
+}
+
+function fmtDate(d){
+  const dt = new Date(d);
+  if(isNaN(dt)) return d;
+  return dt.toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'});
+}
+
+function render(){
+  // income list
+  const inList = document.getElementById('incomeList');
+  if(data.incomes.length===0){
+    inList.innerHTML = '<div class="empty">Belum ada income. Yuk tambahin di atas ✨</div>';
+  } else {
+    inList.innerHTML = data.incomes.map(i=>`
+      <div class="entry${editingIncomeId===i.id?' editing':''}">
+        <div class="tag" style="background:${SOURCE_COLOR[i.source]||'#eee'}">${SOURCE_ICON[i.source]||'💰'}</div>
+        <div class="info">
+          <div class="t1">${i.source} <span style="font-weight:600;color:var(--ink-soft);font-size:11px;">• ${fmtDate(i.date)}</span></div>
+          <div class="t2">${i.note ? i.note : '-'}</div>
+        </div>
+        <div class="amt" style="color:var(--mint-deep)">+${rupiah(i.amount)}</div>
+        <div class="actions">
+          <button class="edit" onclick="editIncome('${i.id}')">✏️</button>
+          <button class="del" onclick="delIncome('${i.id}')">✕</button>
+        </div>
+      </div>`).join('');
+  }
+
+  // outcome list
+  const outList = document.getElementById('outcomeList');
+  if(data.outcomes.length===0){
+    outList.innerHTML = '<div class="empty">Belum ada outcome. Catat pengeluaran pertama yuk 🧾</div>';
+  } else {
+    outList.innerHTML = data.outcomes.map(o=>`
+      <div class="entry${editingOutcomeId===o.id?' editing':''}">
+        <div class="tag" style="background:${CAT_COLOR[o.category]}22;">${CAT_ICON[o.category]||'💸'}</div>
+        <div class="info">
+          <div class="t1">${o.category} <span style="font-weight:600;color:var(--ink-soft);font-size:11px;">• ${fmtDate(o.date)}</span></div>
+          <div class="t2">${o.note ? o.note : '-'} · dari ${o.source}</div>
+        </div>
+        <div class="amt" style="color:var(--pink-deep)">-${rupiah(o.amount)}</div>
+        <div class="actions">
+          <button class="edit" onclick="editOutcome('${o.id}')">✏️</button>
+          <button class="del" onclick="delOutcome('${o.id}')">✕</button>
+        </div>
+      </div>`).join('');
+  }
+
+  // totals
+  const totalIn = data.incomes.reduce((s,x)=>s+x.amount,0);
+  const totalOut = data.outcomes.reduce((s,x)=>s+x.amount,0);
+  const sisa = totalIn - totalOut;
+
+  document.getElementById('sisaTotal').textContent = rupiah(sisa);
+  document.getElementById('capIn').textContent = 'Masuk ' + rupiah(totalIn);
+  document.getElementById('capOut').textContent = 'Kepake ' + rupiah(totalOut);
+  document.getElementById('jarFill').style.width = totalIn>0 ? Math.min(100, (totalOut/totalIn)*100)+'%' : '0%';
+
+  document.getElementById('rcIn').textContent = rupiah(totalIn);
+  document.getElementById('rcOut').textContent = rupiah(totalOut);
+
+  // per source
+  const sources = ['Papa','Mama','Eldi','Koko'];
+  let srcHtml = '';
+  sources.forEach(s=>{
+    const inAmt = data.incomes.filter(x=>x.source===s).reduce((a,b)=>a+b.amount,0);
+    const outAmt = data.outcomes.filter(x=>x.source===s).reduce((a,b)=>a+b.amount,0);
+    if(inAmt===0 && outAmt===0) return;
+    const pct = inAmt>0 ? Math.min(100,(outAmt/inAmt)*100) : 0;
+    srcHtml += `
+      <div class="src-row">
+        <div class="head"><span>${SOURCE_ICON[s]} ${s}</span><span>Sisa ${rupiah(inAmt-outAmt)}</span></div>
+        <div class="bar"><div class="used" style="width:${pct}%"></div></div>
+        <div class="sub">Masuk ${rupiah(inAmt)} · Kepake ${rupiah(outAmt)}</div>
+      </div>`;
+  });
+  document.getElementById('perSource').innerHTML = srcHtml || '<div class="empty">Belum ada data</div>';
+}
+
+// ---------- BACKUP MANUAL ----------
+function exportJSON(){
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'kantong-jalan-backup.json'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('Backup terdownload ⬇️');
+}
+function importJSON(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      const imported = JSON.parse(ev.target.result);
+      if(imported.incomes && imported.outcomes){
+        data = imported;
+        saveData();
+        showToast('Data berhasil diimport ✅');
+      } else {
+        showToast('File nggak valid 😕');
+      }
+    }catch(err){ showToast('Gagal baca file 😕'); }
+  };
+  reader.readAsText(file);
+}
+function resetData(){
+  if(confirm('Yakin mau hapus semua data income & outcome di device ini?')){
+    data = {incomes:[], outcomes:[]};
+    saveData();
+    showToast('Data direset 🗑️');
+  }
+}
+
+// ---------- CLOUD SYNC (JSONBin.io) ----------
+function getCloudConfig(){
+  return {
+    binId: localStorage.getItem('kj_binId') || '',
+    key: localStorage.getItem('kj_key') || ''
+  };
+}
+function saveCloudConfig(){
+  const binId = document.getElementById('cfg-binid').value.trim();
+  const key = document.getElementById('cfg-key').value.trim();
+  localStorage.setItem('kj_binId', binId);
+  localStorage.setItem('kj_key', key);
+  updateSyncDot();
+  showToast('Setelan sync tersimpan ✅');
+}
+function updateSyncDot(){
+  const cfg = getCloudConfig();
+  const dot = document.getElementById('syncDot');
+  const on = cfg.binId && cfg.key;
+  dot.classList.toggle('on', !!on);
+  dot.title = on ? 'Cloud sync aktif' : 'Cloud sync belum aktif';
+}
+async function pushCloud(){
+  const cfg = getCloudConfig();
+  if(!cfg.binId || !cfg.key){ showToast('Isi Bin ID & Access Key dulu ya'); return; }
+  try{
+    showToast('Ngirim data... ⏳');
+    const res = await fetch('https://api.jsonbin.io/v3/b/'+cfg.binId, {
+      method:'PUT',
+      headers:{ 'Content-Type':'application/json', 'X-Access-Key': cfg.key },
+      body: JSON.stringify(data)
+    });
+    if(!res.ok) throw new Error('gagal');
+    document.getElementById('lastSync').textContent = 'Terakhir push: ' + new Date().toLocaleString('id-ID');
+    showToast('Data terkirim ke cloud ☁️✅');
+  }catch(e){ showToast('Gagal push, cek Bin ID/Key 😕'); }
+}
+async function pullCloud(){
+  const cfg = getCloudConfig();
+  if(!cfg.binId || !cfg.key){ showToast('Isi Bin ID & Access Key dulu ya'); return; }
+  try{
+    showToast('Ambil data... ⏳');
+    const res = await fetch('https://api.jsonbin.io/v3/b/'+cfg.binId+'/latest', {
+      headers:{ 'X-Access-Key': cfg.key }
+    });
+    if(!res.ok) throw new Error('gagal');
+    const json = await res.json();
+    if(json.record && json.record.incomes){
+      data = json.record;
+      saveData();
+      document.getElementById('lastSync').textContent = 'Terakhir pull: ' + new Date().toLocaleString('id-ID');
+      showToast('Data ke-update dari cloud ☁️✅');
+    }
+  }catch(e){ showToast('Gagal pull, cek Bin ID/Key 😕'); }
+}
+
+// ---------- INIT ----------
+window.onload = function(){
+  document.getElementById('in-date').value = todayStr();
+  document.getElementById('out-date').value = todayStr();
+  const cfg = getCloudConfig();
+  document.getElementById('cfg-binid').value = cfg.binId;
+  document.getElementById('cfg-key').value = cfg.key;
+  updateSyncDot();
+  loadData();
+  render();
+};
+</script>
+</body>
+</html>
