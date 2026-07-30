@@ -108,6 +108,8 @@
   }
   input:focus, select:focus, textarea:focus{outline:none; border-color:var(--pink);}
   .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .filter-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .filter-row label{margin-top:0;}
   .btn{
     margin-top:16px; width:100%; padding:13px; border:none; border-radius:14px;
     font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; cursor:pointer;
@@ -243,7 +245,23 @@
     </div>
     <div class="card">
       <h2>📋 Riwayat Income</h2>
-      <div id="incomeList"></div>
+      <div class="filter-row">
+        <div>
+          <label>Dari</label>
+          <input type="date" id="in-filter-from" onchange="render()">
+        </div>
+        <div>
+          <label>Sampai</label>
+          <input type="date" id="in-filter-to" onchange="render()">
+        </div>
+      </div>
+      <label>Sumber</label>
+      <select id="in-filter-source" onchange="render()">
+        <option value="">Semua Sumber</option>
+        <option>Papa</option><option>Mama</option><option>Eldi</option><option>Koko</option>
+      </select>
+      <button class="subtle-btn" style="margin-top:8px;" onclick="resetIncomeFilter()">Reset filter</button>
+      <div id="incomeList" style="margin-top:8px;"></div>
     </div>
   </div>
 
@@ -283,7 +301,38 @@
     </div>
     <div class="card">
       <h2>📋 Riwayat Outcome</h2>
-      <div id="outcomeList"></div>
+      <div class="filter-row">
+        <div>
+          <label>Dari</label>
+          <input type="date" id="out-filter-from" onchange="render()">
+        </div>
+        <div>
+          <label>Sampai</label>
+          <input type="date" id="out-filter-to" onchange="render()">
+        </div>
+      </div>
+      <div class="filter-row">
+        <div>
+          <label>Kategori</label>
+          <select id="out-filter-category" onchange="render()">
+            <option value="">Semua Kategori</option>
+            <option value="FnB">🍔 FnB</option>
+            <option value="Akomodasi">🏨 Akomodasi</option>
+            <option value="Transportasi">🚗 Transportasi</option>
+            <option value="Entertainment">🎡 Entertainment</option>
+            <option value="Lainnya">✨ Lainnya</option>
+          </select>
+        </div>
+        <div>
+          <label>Sumber</label>
+          <select id="out-filter-source" onchange="render()">
+            <option value="">Semua Sumber</option>
+            <option>Papa</option><option>Mama</option><option>Eldi</option><option>Koko</option>
+          </select>
+        </div>
+      </div>
+      <button class="subtle-btn" style="margin-top:8px;" onclick="resetOutcomeFilter()">Reset filter</button>
+      <div id="outcomeList" style="margin-top:8px;"></div>
     </div>
   </div>
 
@@ -306,17 +355,21 @@
   <div class="page" id="page-settings">
     <div class="card">
       <h2>☁️ Cloud Sync (biar bisa dibuka di HP lain)</h2>
-      <p class="helptext">Data otomatis kesimpen di browser ini (localStorage). Biar bisa kebuka di HP/device lain dan angkanya sama, pakai <b>JSONBin.io</b> (gratis). Caranya: buat akun di jsonbin.io → buat Bin baru → copy Bin ID & Master/Access Key ke bawah ini. Isi di semua device yang mau dipakai, pakai Bin ID yang sama.</p>
-      <label>Bin ID</label>
-      <input type="text" id="cfg-binid" placeholder="cth: 64f1a2b3...">
+      <p class="helptext">Data otomatis kesimpen di browser ini (localStorage). Biar bisa kebuka di HP/device lain dan angkanya sama, pakai <b>JSONBin.io</b> (gratis, cukup login pakai akun Google/GitHub). Cukup isi Access Key di bawah, terus pencet <b>Buat Bin Otomatis</b> — Bin ID bakal ke-generate sendiri.</p>
+      <label>1. Login & ambil Access Key</label>
+      <p class="helptext" style="margin-top:0;">Buka <a href="https://jsonbin.io" target="_blank" style="color:var(--blue-deep)">jsonbin.io</a> → Login pakai Google/GitHub → masuk ke halaman <b>API Keys</b> → copy <b>X-Master-Key</b> / Access Key kamu, paste di bawah.</p>
       <label>X-Access-Key</label>
       <input type="text" id="cfg-key" placeholder="paste access key kamu">
+      <button class="btn ghost small" style="width:100%; margin-top:10px;" onclick="autoCreateBin()">✨ 2. Buat Bin Otomatis</button>
+      <label>Bin ID</label>
+      <input type="text" id="cfg-binid" placeholder="otomatis keisi setelah klik tombol di atas">
       <button class="btn" onclick="saveCloudConfig()">💾 Simpan Setelan</button>
       <div class="row2" style="margin-top:12px;">
         <button class="btn ghost small" onclick="pushCloud()">⬆️ Push (kirim data)</button>
         <button class="btn ghost small" onclick="pullCloud()">⬇️ Pull (ambil data)</button>
       </div>
       <p class="helptext" id="lastSync">Belum pernah sync.</p>
+      <p class="helptext">📱 Di HP/device lain: cukup isi <b>Access Key</b> yang sama + <b>Bin ID</b> yang tadi udah ke-generate (tinggal copy dari sini), terus pencet Simpan Setelan → Pull. Nggak perlu klik "Buat Bin Otomatis" lagi.</p>
     </div>
     <div class="card">
       <h2>🗂️ Backup Manual</h2>
@@ -502,6 +555,20 @@ function cancelEditOutcome(){
   render();
 }
 
+function resetIncomeFilter(){
+  document.getElementById('in-filter-from').value = '';
+  document.getElementById('in-filter-to').value = '';
+  document.getElementById('in-filter-source').value = '';
+  render();
+}
+function resetOutcomeFilter(){
+  document.getElementById('out-filter-from').value = '';
+  document.getElementById('out-filter-to').value = '';
+  document.getElementById('out-filter-category').value = '';
+  document.getElementById('out-filter-source').value = '';
+  render();
+}
+
 function fmtDate(d){
   const dt = new Date(d);
   if(isNaN(dt)) return d;
@@ -509,12 +576,37 @@ function fmtDate(d){
 }
 
 function render(){
+  // read filters
+  const inFrom = document.getElementById('in-filter-from').value;
+  const inTo = document.getElementById('in-filter-to').value;
+  const inSrc = document.getElementById('in-filter-source').value;
+  const outFrom = document.getElementById('out-filter-from').value;
+  const outTo = document.getElementById('out-filter-to').value;
+  const outCat = document.getElementById('out-filter-category').value;
+  const outSrc = document.getElementById('out-filter-source').value;
+
+  const filteredIncomes = data.incomes.filter(i=>{
+    if(inFrom && i.date < inFrom) return false;
+    if(inTo && i.date > inTo) return false;
+    if(inSrc && i.source !== inSrc) return false;
+    return true;
+  });
+  const filteredOutcomes = data.outcomes.filter(o=>{
+    if(outFrom && o.date < outFrom) return false;
+    if(outTo && o.date > outTo) return false;
+    if(outCat && o.category !== outCat) return false;
+    if(outSrc && o.source !== outSrc) return false;
+    return true;
+  });
+  const isIncomeFiltered = inFrom || inTo || inSrc;
+  const isOutcomeFiltered = outFrom || outTo || outCat || outSrc;
+
   // income list
   const inList = document.getElementById('incomeList');
-  if(data.incomes.length===0){
-    inList.innerHTML = '<div class="empty">Belum ada income. Yuk tambahin di atas ✨</div>';
+  if(filteredIncomes.length===0){
+    inList.innerHTML = `<div class="empty">${isIncomeFiltered ? 'Nggak ada yang cocok sama filter 🔍' : 'Belum ada income. Yuk tambahin di atas ✨'}</div>`;
   } else {
-    inList.innerHTML = data.incomes.map(i=>`
+    inList.innerHTML = filteredIncomes.map(i=>`
       <div class="entry${editingIncomeId===i.id?' editing':''}">
         <div class="tag" style="background:${SOURCE_COLOR[i.source]||'#eee'}">${SOURCE_ICON[i.source]||'💰'}</div>
         <div class="info">
@@ -531,10 +623,10 @@ function render(){
 
   // outcome list
   const outList = document.getElementById('outcomeList');
-  if(data.outcomes.length===0){
-    outList.innerHTML = '<div class="empty">Belum ada outcome. Catat pengeluaran pertama yuk 🧾</div>';
+  if(filteredOutcomes.length===0){
+    outList.innerHTML = `<div class="empty">${isOutcomeFiltered ? 'Nggak ada yang cocok sama filter 🔍' : 'Belum ada outcome. Catat pengeluaran pertama yuk 🧾'}</div>`;
   } else {
-    outList.innerHTML = data.outcomes.map(o=>`
+    outList.innerHTML = filteredOutcomes.map(o=>`
       <div class="entry${editingOutcomeId===o.id?' editing':''}">
         <div class="tag" style="background:${CAT_COLOR[o.category]}22;">${CAT_ICON[o.category]||'💸'}</div>
         <div class="info">
@@ -637,6 +729,38 @@ function updateSyncDot(){
   dot.classList.toggle('on', !!on);
   dot.title = on ? 'Cloud sync aktif' : 'Cloud sync belum aktif';
 }
+async function autoCreateBin(){
+  const key = document.getElementById('cfg-key').value.trim();
+  if(!key){ showToast('Isi Access Key dulu ya 🙏'); return; }
+  try{
+    showToast('Bikin bin baru... ⏳');
+    const res = await fetch('https://api.jsonbin.io/v3/b', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'X-Master-Key': key,
+        'X-Bin-Name': 'kantong-jalan-jalan'
+      },
+      body: JSON.stringify(data)
+    });
+    if(!res.ok){
+      const errText = await res.text();
+      throw new Error(errText);
+    }
+    const json = await res.json();
+    const newBinId = json.metadata && json.metadata.id;
+    if(!newBinId) throw new Error('no id returned');
+    document.getElementById('cfg-binid').value = newBinId;
+    localStorage.setItem('kj_binId', newBinId);
+    localStorage.setItem('kj_key', key);
+    updateSyncDot();
+    document.getElementById('lastSync').textContent = 'Bin baru dibuat: ' + new Date().toLocaleString('id-ID');
+    showToast('Bin berhasil dibuat ✨ Bin ID otomatis keisi!');
+  }catch(e){
+    showToast('Gagal bikin bin, cek Access Key kamu 😕');
+  }
+}
+
 async function pushCloud(){
   const cfg = getCloudConfig();
   if(!cfg.binId || !cfg.key){ showToast('Isi Bin ID & Access Key dulu ya'); return; }
