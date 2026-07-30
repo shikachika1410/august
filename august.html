@@ -187,6 +187,14 @@
   .src-row .bar .used{background:linear-gradient(90deg,var(--pink),var(--pink-deep)); height:100%;}
   .src-row .sub{font-size:11px; color:var(--ink-soft); font-weight:700; margin-top:3px;}
 
+  /* VIEW ONLY MODE */
+  body.view-only .hide-in-view-only{display:none !important;}
+  .view-badge{
+    display:none; align-items:center; gap:6px; background:rgba(255,255,255,0.22);
+    color:white; font-size:11px; font-weight:800; padding:5px 10px; border-radius:20px; margin-top:8px;
+  }
+  body.view-only .view-badge{display:inline-flex;}
+
   .cat-row{display:flex; align-items:center; gap:8px; margin-top:9px;}
   .cat-row .dot{width:9px; height:9px; border-radius:50%; flex-shrink:0;}
   .cat-row .nm{flex:1; font-size:13px; font-weight:700;}
@@ -221,6 +229,7 @@
       <span id="capIn">Masuk Rp 0</span>
       <span id="capOut">Kepake Rp 0</span>
     </div>
+    <span class="view-badge">👀 Mode Lihat Saja</span>
   </div>
 
   <!-- INCOME PAGE -->
@@ -349,6 +358,47 @@
       <h2>👛 Sisa per Sumber</h2>
       <div id="perSource"></div>
     </div>
+    <div class="card">
+      <h2>📜 Riwayat Lengkap</h2>
+      <div class="filter-row">
+        <div>
+          <label>Dari</label>
+          <input type="date" id="rc-filter-from" onchange="render()">
+        </div>
+        <div>
+          <label>Sampai</label>
+          <input type="date" id="rc-filter-to" onchange="render()">
+        </div>
+      </div>
+      <div class="filter-row">
+        <div>
+          <label>Tipe</label>
+          <select id="rc-filter-type" onchange="render()">
+            <option value="">Semua Tipe</option>
+            <option value="income">💌 Income</option>
+            <option value="outcome">🧾 Outcome</option>
+          </select>
+        </div>
+        <div>
+          <label>Sumber</label>
+          <select id="rc-filter-source" onchange="render()">
+            <option value="">Semua Sumber</option>
+            <option>Papa</option><option>Mama</option><option>Eldi</option><option>Koko</option>
+          </select>
+        </div>
+      </div>
+      <label>Kategori (khusus outcome)</label>
+      <select id="rc-filter-category" onchange="render()">
+        <option value="">Semua Kategori</option>
+        <option value="FnB">🍔 FnB</option>
+        <option value="Akomodasi">🏨 Akomodasi</option>
+        <option value="Transportasi">🚗 Transportasi</option>
+        <option value="Entertainment">🎡 Entertainment</option>
+        <option value="Lainnya">✨ Lainnya</option>
+      </select>
+      <button class="subtle-btn" style="margin-top:8px;" onclick="resetRecapFilter()">Reset filter</button>
+      <div id="recapHistoryList" style="margin-top:8px;"></div>
+    </div>
   </div>
 
   <!-- SETTINGS PAGE -->
@@ -372,6 +422,15 @@
       <p class="helptext">📱 Di HP/device lain: cukup isi <b>Access Key</b> yang sama + <b>Bin ID</b> yang tadi udah ke-generate (tinggal copy dari sini), terus pencet Simpan Setelan → Pull. Nggak perlu klik "Buat Bin Otomatis" lagi.</p>
     </div>
     <div class="card">
+      <h2>🔗 Bagikan Link View Only</h2>
+      <p class="helptext">Orang yang buka link ini cuma bisa <b>lihat Recap</b> (ringkasan + riwayat lengkap) dan <b>nggak bisa</b> nambah/edit/hapus apapun. Wajib aktifin Cloud Sync dulu di atas & pencet Push, biar datanya kebawa ke link ini.</p>
+      <p class="helptext"><b>Disaranin:</b> jangan pakai Access/Master Key kamu buat link ini (soalnya kalau ke-inspect, orang bisa pakai key itu buat edit data lewat API). Mending bikin <b>Access Key baru</b> khusus read-only di jsonbin.io (menu API Keys → Create Access Key → centang izin "Get Bin" doang), terus paste di bawah.</p>
+      <label>Read-only Access Key (opsional tapi disaranin)</label>
+      <input type="text" id="cfg-readonly-key" placeholder="paste read-only key kalau ada">
+      <button class="btn ghost small" style="width:100%; margin-top:10px;" onclick="generateShareLink()">✨ Buat & Copy Link</button>
+      <p class="helptext" id="shareLinkResult"></p>
+    </div>
+    <div class="card">
       <h2>🗂️ Backup Manual</h2>
       <p class="helptext">Kalau males pakai cloud sync, bisa export/import file .json manual buat pindah data antar device.</p>
       <div class="row2">
@@ -391,10 +450,10 @@
 </div>
 
 <div class="nav">
-  <button data-page="income" class="active" onclick="showPage('income')"><span class="ic">💌</span>Income</button>
-  <button data-page="outcome" onclick="showPage('outcome')"><span class="ic">🧾</span>Outcome</button>
+  <button data-page="income" class="active hide-in-view-only" onclick="showPage('income')"><span class="ic">💌</span>Income</button>
+  <button data-page="outcome" class="hide-in-view-only" onclick="showPage('outcome')"><span class="ic">🧾</span>Outcome</button>
   <button data-page="recap" onclick="showPage('recap')"><span class="ic">📊</span>Recap</button>
-  <button data-page="settings" onclick="showPage('settings')"><span class="ic">⚙️</span>Setelan</button>
+  <button data-page="settings" class="hide-in-view-only" onclick="showPage('settings')"><span class="ic">⚙️</span>Setelan</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -408,6 +467,7 @@ const CAT_COLOR = {FnB:'#ff8fb3', Akomodasi:'#6fc3f7', Transportasi:'#7de3c8', E
 let data = { incomes: [], outcomes: [] };
 let editingIncomeId = null;
 let editingOutcomeId = null;
+let isViewOnly = false;
 
 function loadData(){
   const raw = localStorage.getItem('kantongJalanData');
@@ -670,6 +730,73 @@ function render(){
       </div>`;
   });
   document.getElementById('perSource').innerHTML = srcHtml || '<div class="empty">Belum ada data</div>';
+
+  renderRecapHistory();
+}
+
+function renderRecapHistory(){
+  const from = document.getElementById('rc-filter-from').value;
+  const to = document.getElementById('rc-filter-to').value;
+  const type = document.getElementById('rc-filter-type').value;
+  const cat = document.getElementById('rc-filter-category').value;
+  const src = document.getElementById('rc-filter-source').value;
+
+  let combined = [];
+  if(type !== 'outcome'){
+    data.incomes.forEach(i=>{
+      if(from && i.date < from) return;
+      if(to && i.date > to) return;
+      if(src && i.source !== src) return;
+      combined.push({...i, _type:'income'});
+    });
+  }
+  if(type !== 'income'){
+    data.outcomes.forEach(o=>{
+      if(from && o.date < from) return;
+      if(to && o.date > to) return;
+      if(src && o.source !== src) return;
+      if(cat && o.category !== cat) return;
+      combined.push({...o, _type:'outcome'});
+    });
+  }
+  combined.sort((a,b)=> b.date.localeCompare(a.date));
+
+  const wrap = document.getElementById('recapHistoryList');
+  const isFiltered = from || to || type || cat || src;
+  if(combined.length===0){
+    wrap.innerHTML = `<div class="empty">${isFiltered ? 'Nggak ada yang cocok sama filter 🔍' : 'Belum ada riwayat'}</div>`;
+    return;
+  }
+  wrap.innerHTML = combined.map(x=>{
+    if(x._type==='income'){
+      return `
+      <div class="entry">
+        <div class="tag" style="background:${SOURCE_COLOR[x.source]||'#eee'}">${SOURCE_ICON[x.source]||'💰'}</div>
+        <div class="info">
+          <div class="t1">${x.source} <span style="font-weight:600;color:var(--ink-soft);font-size:11px;">• ${fmtDate(x.date)}</span></div>
+          <div class="t2">${x.note ? x.note : '-'}</div>
+        </div>
+        <div class="amt" style="color:var(--mint-deep)">+${rupiah(x.amount)}</div>
+      </div>`;
+    }
+    return `
+      <div class="entry">
+        <div class="tag" style="background:${CAT_COLOR[x.category]}22;">${CAT_ICON[x.category]||'💸'}</div>
+        <div class="info">
+          <div class="t1">${x.category} <span style="font-weight:600;color:var(--ink-soft);font-size:11px;">• ${fmtDate(x.date)}</span></div>
+          <div class="t2">${x.note ? x.note : '-'} · dari ${x.source}</div>
+        </div>
+        <div class="amt" style="color:var(--pink-deep)">-${rupiah(x.amount)}</div>
+      </div>`;
+  }).join('');
+}
+function resetRecapFilter(){
+  document.getElementById('rc-filter-from').value = '';
+  document.getElementById('rc-filter-to').value = '';
+  document.getElementById('rc-filter-type').value = '';
+  document.getElementById('rc-filter-category').value = '';
+  document.getElementById('rc-filter-source').value = '';
+  render();
 }
 
 // ---------- BACKUP MANUAL ----------
@@ -795,14 +922,59 @@ async function pullCloud(){
   }catch(e){ showToast('Gagal pull, cek Bin ID/Key 😕'); }
 }
 
+function generateShareLink(){
+  const cfg = getCloudConfig();
+  const readonlyKey = document.getElementById('cfg-readonly-key').value.trim();
+  if(!cfg.binId){ showToast('Aktifin & simpan Cloud Sync dulu ya 🙏'); return; }
+  const keyToUse = readonlyKey || cfg.key;
+  if(!keyToUse){ showToast('Isi Access Key dulu ya 🙏'); return; }
+  const base = location.origin + location.pathname;
+  const url = `${base}?view=1&bin=${encodeURIComponent(cfg.binId)}&key=${encodeURIComponent(keyToUse)}`;
+  const resultEl = document.getElementById('shareLinkResult');
+  resultEl.innerHTML = `Link: <a href="${url}" target="_blank" style="color:var(--blue-deep); word-break:break-all;">${url}</a>`;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(()=>{
+      showToast(readonlyKey ? 'Link tersalin ✅ (pakai read-only key)' : 'Link tersalin ✅ (pakai key utama, hati-hati ya)');
+    }).catch(()=>{ showToast('Link dibuat, tapi gagal auto-copy — copy manual ya'); });
+  } else {
+    showToast('Link dibuat — copy manual ya');
+  }
+}
+
+// ---------- VIEW-ONLY MODE ----------
+async function pullCloudReadonly(binId, key){
+  try{
+    const res = await fetch('https://api.jsonbin.io/v3/b/'+binId+'/latest', {
+      headers:{ 'X-Master-Key': key }
+    });
+    if(!res.ok) throw new Error('gagal');
+    const json = await res.json();
+    if(json.record && json.record.incomes){
+      data = json.record;
+    }
+  }catch(e){ showToast('Gagal ambil data recap 😕'); }
+}
+
 // ---------- INIT ----------
-window.onload = function(){
+window.onload = async function(){
   document.getElementById('in-date').value = todayStr();
   document.getElementById('out-date').value = todayStr();
   const cfg = getCloudConfig();
   document.getElementById('cfg-binid').value = cfg.binId;
   document.getElementById('cfg-key').value = cfg.key;
   updateSyncDot();
+
+  const params = new URLSearchParams(location.search);
+  if(params.get('view')==='1' && params.get('bin') && params.get('key')){
+    isViewOnly = true;
+    document.body.classList.add('view-only');
+    showToast('Buka data terbaru... ⏳');
+    await pullCloudReadonly(params.get('bin'), params.get('key'));
+    showPage('recap');
+    render();
+    return;
+  }
+
   loadData();
   render();
 };
