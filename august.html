@@ -358,8 +358,8 @@
       <p class="helptext">Data otomatis kesimpen di browser ini (localStorage). Biar bisa kebuka di HP/device lain dan angkanya sama, pakai <b>JSONBin.io</b> (gratis, cukup login pakai akun Google/GitHub). Cukup isi Access Key di bawah, terus pencet <b>Buat Bin Otomatis</b> — Bin ID bakal ke-generate sendiri.</p>
       <label>1. Login & ambil Access Key</label>
       <p class="helptext" style="margin-top:0;">Buka <a href="https://jsonbin.io" target="_blank" style="color:var(--blue-deep)">jsonbin.io</a> → Login pakai Google/GitHub → masuk ke halaman <b>API Keys</b> → copy <b>X-Master-Key</b> / Access Key kamu, paste di bawah.</p>
-      <label>X-Access-Key</label>
-      <input type="text" id="cfg-key" placeholder="paste access key kamu">
+      <label>Access / Master Key</label>
+      <input type="text" id="cfg-key" placeholder="paste key kamu">
       <button class="btn ghost small" style="width:100%; margin-top:10px;" onclick="autoCreateBin()">✨ 2. Buat Bin Otomatis</button>
       <label>Bin ID</label>
       <input type="text" id="cfg-binid" placeholder="otomatis keisi setelah klik tombol di atas">
@@ -768,7 +768,7 @@ async function pushCloud(){
     showToast('Ngirim data... ⏳');
     const res = await fetch('https://api.jsonbin.io/v3/b/'+cfg.binId, {
       method:'PUT',
-      headers:{ 'Content-Type':'application/json', 'X-Access-Key': cfg.key },
+      headers:{ 'Content-Type':'application/json', 'X-Master-Key': cfg.key },
       body: JSON.stringify(data)
     });
     if(!res.ok) throw new Error('gagal');
@@ -782,7 +782,7 @@ async function pullCloud(){
   try{
     showToast('Ambil data... ⏳');
     const res = await fetch('https://api.jsonbin.io/v3/b/'+cfg.binId+'/latest', {
-      headers:{ 'X-Access-Key': cfg.key }
+      headers:{ 'X-Master-Key': cfg.key }
     });
     if(!res.ok) throw new Error('gagal');
     const json = await res.json();
