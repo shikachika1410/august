@@ -376,6 +376,11 @@
       </div>
     </div>
     <div class="card">
+      <h2>💰 Total Kasih per Sumber</h2>
+      <p class="helptext" style="margin-top:0;">Total uang yang udah dikasih masing-masing orang (siapa yang paling banyak kontribusi).</p>
+      <div id="perGiver"></div>
+    </div>
+    <div class="card">
       <h2>👛 Sisa per Pemegang</h2>
       <p class="helptext" style="margin-top:0;">Sisa uang yang ada di kantong masing-masing (dari total dia pegang, dikurangi yang udah dia keluarin).</p>
       <div id="perSource"></div>
@@ -751,6 +756,22 @@ function render(){
 
   document.getElementById('rcIn').textContent = rupiah(totalIn);
   document.getElementById('rcOut').textContent = rupiah(totalOut);
+
+  // total kasih per sumber (giver)
+  const givers = ['Papa','Mama','Eldi','Koko'];
+  const totalInForPct = data.incomes.reduce((s,x)=>s+x.amount,0);
+  let giverHtml = '';
+  givers.forEach(g=>{
+    const amt = data.incomes.filter(x=>x.source===g).reduce((a,b)=>a+b.amount,0);
+    if(amt===0) return;
+    const pct = totalInForPct>0 ? Math.round((amt/totalInForPct)*100) : 0;
+    giverHtml += `
+      <div class="src-row">
+        <div class="head"><span>${SOURCE_ICON[g]||''} ${g}</span><span>${rupiah(amt)} <span style="color:var(--ink-soft); font-weight:700;">(${pct}%)</span></span></div>
+        <div class="bar"><div class="used" style="width:${pct}%; background:linear-gradient(90deg,var(--mint),var(--mint-deep));"></div></div>
+      </div>`;
+  });
+  document.getElementById('perGiver').innerHTML = giverHtml || '<div class="empty">Belum ada income</div>';
 
   // per pemegang (siapa yang megang cash-nya sekarang)
   const holders = ['Papa','Mama','Eldi','Koko'];
