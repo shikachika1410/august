@@ -242,10 +242,20 @@
       </div>
       <label>Tanggal</label>
       <input type="date" id="in-date">
-      <label>Sumber Uang</label>
-      <select id="in-source">
-        <option>Papa</option><option>Mama</option><option>Eldi</option><option>Koko</option>
-      </select>
+      <div class="row2">
+        <div>
+          <label>Sumber Uang (yg ngasih)</label>
+          <select id="in-source">
+            <option>Papa</option><option>Mama</option><option>Eldi</option><option>Koko</option>
+          </select>
+        </div>
+        <div>
+          <label>Dipegang Oleh</label>
+          <select id="in-holder">
+            <option>Papa</option><option>Mama</option><option>Eldi</option><option>Koko</option>
+          </select>
+        </div>
+      </div>
       <label>Jumlah (Rp)</label>
       <input type="number" id="in-amount" placeholder="cth: 2000000">
       <label>Keterangan (opsional)</label>
@@ -264,11 +274,22 @@
           <input type="date" id="in-filter-to" onchange="render()">
         </div>
       </div>
-      <label>Sumber</label>
-      <select id="in-filter-source" onchange="render()">
-        <option value="">Semua Sumber</option>
-        <option>Papa</option><option>Mama</option><option>Eldi</option><option>Koko</option>
-      </select>
+      <div class="filter-row">
+        <div>
+          <label>Sumber</label>
+          <select id="in-filter-source" onchange="render()">
+            <option value="">Semua Sumber</option>
+            <option>Papa</option><option>Mama</option><option>Eldi</option><option>Koko</option>
+          </select>
+        </div>
+        <div>
+          <label>Dipegang Oleh</label>
+          <select id="in-filter-holder" onchange="render()">
+            <option value="">Semua</option>
+            <option>Papa</option><option>Mama</option><option>Eldi</option><option>Koko</option>
+          </select>
+        </div>
+      </div>
       <button class="subtle-btn" style="margin-top:8px;" onclick="resetIncomeFilter()">Reset filter</button>
       <div id="incomeList" style="margin-top:8px;"></div>
     </div>
@@ -296,8 +317,8 @@
           </select>
         </div>
         <div>
-          <label>Sumber Uang</label>
-          <select id="out-source">
+          <label>Dipegang Oleh</label>
+          <select id="out-holder">
             <option>Papa</option><option>Mama</option><option>Eldi</option><option>Koko</option>
           </select>
         </div>
@@ -333,9 +354,9 @@
           </select>
         </div>
         <div>
-          <label>Sumber</label>
-          <select id="out-filter-source" onchange="render()">
-            <option value="">Semua Sumber</option>
+          <label>Dipegang Oleh</label>
+          <select id="out-filter-holder" onchange="render()">
+            <option value="">Semua</option>
             <option>Papa</option><option>Mama</option><option>Eldi</option><option>Koko</option>
           </select>
         </div>
@@ -355,7 +376,8 @@
       </div>
     </div>
     <div class="card">
-      <h2>👛 Sisa per Sumber</h2>
+      <h2>👛 Sisa per Pemegang</h2>
+      <p class="helptext" style="margin-top:0;">Sisa uang yang ada di kantong masing-masing (dari total dia pegang, dikurangi yang udah dia keluarin).</p>
       <div id="perSource"></div>
     </div>
     <div class="card">
@@ -380,9 +402,9 @@
           </select>
         </div>
         <div>
-          <label>Sumber</label>
-          <select id="rc-filter-source" onchange="render()">
-            <option value="">Semua Sumber</option>
+          <label>Dipegang Oleh</label>
+          <select id="rc-filter-holder" onchange="render()">
+            <option value="">Semua</option>
             <option>Papa</option><option>Mama</option><option>Eldi</option><option>Koko</option>
           </select>
         </div>
@@ -461,6 +483,8 @@
 <script>
 const SOURCE_ICON = {Papa:'👨', Mama:'👩', Eldi:'🧑', Koko:'🧑‍🦱'};
 const SOURCE_COLOR = {Papa:'#ffd6e6', Mama:'#cdeeff', Eldi:'#d8f5e3', Koko:'#ffe9c7'};
+const HOLDER_ICON = {Papa:'👨', Mama:'👩', Eldi:'🧑', Koko:'🧑‍🦱'};
+const HOLDER_COLOR = {Papa:'#ffd6e6', Mama:'#cdeeff', Eldi:'#d8f5e3', Koko:'#ffe9c7'};
 const CAT_ICON = {FnB:'🍔', Akomodasi:'🏨', Transportasi:'🚗', Entertainment:'🎡', Lainnya:'✨'};
 const CAT_COLOR = {FnB:'#ff8fb3', Akomodasi:'#6fc3f7', Transportasi:'#7de3c8', Entertainment:'#ffcf6f', Lainnya:'#c39bd3'};
 
@@ -473,16 +497,25 @@ function loadData(){
   const raw = localStorage.getItem('kantongJalanData');
   if(raw){
     try{ data = JSON.parse(raw); }catch(e){ data = {incomes:[], outcomes:[]}; }
+    // migrasi data lama yang belum ada field "holder"
+    data.incomes = (data.incomes||[]).map(i=>({
+      ...i,
+      holder: i.holder || i.source || 'Papa'
+    }));
+    data.outcomes = (data.outcomes||[]).map(o=>({
+      ...o,
+      holder: o.holder || 'Papa'
+    }));
   } else {
     // seed data awal biar langsung ada contoh
     data = {
       incomes: [
-        {id: genId(), date: todayStr(), source:'Papa', amount:2000000, note:'Transfer awal buat trip'},
-        {id: genId(), date: todayStr(), source:'Papa', amount:500000, note:'Transfer ke Koko buat sewa mobil'}
+        {id: genId(), date: todayStr(), source:'Papa', holder:'Papa', amount:2000000, note:'Transfer awal buat trip'},
+        {id: genId(), date: todayStr(), source:'Papa', holder:'Koko', amount:500000, note:'Transfer buat sewa mobil'}
       ],
       outcomes: [
-        {id: genId(), date: todayStr(), category:'Akomodasi', amount:920000, note:'Hotel', source:'Papa'},
-        {id: genId(), date: todayStr(), category:'Transportasi', amount:500000, note:'Sewa mobil (lewat Koko)', source:'Papa'}
+        {id: genId(), date: todayStr(), category:'Akomodasi', amount:920000, note:'Hotel', holder:'Papa'},
+        {id: genId(), date: todayStr(), category:'Transportasi', amount:500000, note:'Sewa mobil', holder:'Koko'}
       ]
     };
     saveData();
@@ -510,20 +543,21 @@ function showPage(p){
 function addIncome(){
   const date = document.getElementById('in-date').value || todayStr();
   const source = document.getElementById('in-source').value;
+  const holder = document.getElementById('in-holder').value;
   const amount = parseFloat(document.getElementById('in-amount').value);
   const note = document.getElementById('in-note').value.trim();
   if(!amount || amount<=0){ showToast('Isi jumlahnya dulu ya 🙏'); return; }
 
   if(editingIncomeId){
     const item = data.incomes.find(x=>x.id===editingIncomeId);
-    if(item){ item.date=date; item.source=source; item.amount=amount; item.note=note; }
+    if(item){ item.date=date; item.source=source; item.holder=holder; item.amount=amount; item.note=note; }
     cancelEditIncome();
     saveData();
     showToast('Income ke-update ✏️✅');
     return;
   }
 
-  data.incomes.unshift({id:genId(), date, source, amount, note});
+  data.incomes.unshift({id:genId(), date, source, holder, amount, note});
   document.getElementById('in-amount').value='';
   document.getElementById('in-note').value='';
   saveData();
@@ -532,21 +566,21 @@ function addIncome(){
 function addOutcome(){
   const date = document.getElementById('out-date').value || todayStr();
   const category = document.getElementById('out-category').value;
-  const source = document.getElementById('out-source').value;
+  const holder = document.getElementById('out-holder').value;
   const amount = parseFloat(document.getElementById('out-amount').value);
   const note = document.getElementById('out-note').value.trim();
   if(!amount || amount<=0){ showToast('Isi jumlahnya dulu ya 🙏'); return; }
 
   if(editingOutcomeId){
     const item = data.outcomes.find(x=>x.id===editingOutcomeId);
-    if(item){ item.date=date; item.category=category; item.source=source; item.amount=amount; item.note=note; }
+    if(item){ item.date=date; item.category=category; item.holder=holder; item.amount=amount; item.note=note; }
     cancelEditOutcome();
     saveData();
     showToast('Outcome ke-update ✏️✅');
     return;
   }
 
-  data.outcomes.unshift({id:genId(), date, category, amount, note, source});
+  data.outcomes.unshift({id:genId(), date, category, amount, note, holder});
   document.getElementById('out-amount').value='';
   document.getElementById('out-note').value='';
   saveData();
@@ -569,6 +603,7 @@ function editIncome(id){
   editingIncomeId = id;
   document.getElementById('in-date').value = item.date;
   document.getElementById('in-source').value = item.source;
+  document.getElementById('in-holder').value = item.holder || 'Papa';
   document.getElementById('in-amount').value = item.amount;
   document.getElementById('in-note').value = item.note || '';
   document.getElementById('in-form-title').textContent = '✏️ Edit Income';
@@ -594,7 +629,7 @@ function editOutcome(id){
   editingOutcomeId = id;
   document.getElementById('out-date').value = item.date;
   document.getElementById('out-category').value = item.category;
-  document.getElementById('out-source').value = item.source;
+  document.getElementById('out-holder').value = item.holder || 'Papa';
   document.getElementById('out-amount').value = item.amount;
   document.getElementById('out-note').value = item.note || '';
   document.getElementById('out-form-title').textContent = '✏️ Edit Outcome';
@@ -619,13 +654,14 @@ function resetIncomeFilter(){
   document.getElementById('in-filter-from').value = '';
   document.getElementById('in-filter-to').value = '';
   document.getElementById('in-filter-source').value = '';
+  document.getElementById('in-filter-holder').value = '';
   render();
 }
 function resetOutcomeFilter(){
   document.getElementById('out-filter-from').value = '';
   document.getElementById('out-filter-to').value = '';
   document.getElementById('out-filter-category').value = '';
-  document.getElementById('out-filter-source').value = '';
+  document.getElementById('out-filter-holder').value = '';
   render();
 }
 
@@ -640,26 +676,28 @@ function render(){
   const inFrom = document.getElementById('in-filter-from').value;
   const inTo = document.getElementById('in-filter-to').value;
   const inSrc = document.getElementById('in-filter-source').value;
+  const inHolder = document.getElementById('in-filter-holder').value;
   const outFrom = document.getElementById('out-filter-from').value;
   const outTo = document.getElementById('out-filter-to').value;
   const outCat = document.getElementById('out-filter-category').value;
-  const outSrc = document.getElementById('out-filter-source').value;
+  const outHolder = document.getElementById('out-filter-holder').value;
 
   const filteredIncomes = data.incomes.filter(i=>{
     if(inFrom && i.date < inFrom) return false;
     if(inTo && i.date > inTo) return false;
     if(inSrc && i.source !== inSrc) return false;
+    if(inHolder && i.holder !== inHolder) return false;
     return true;
   });
   const filteredOutcomes = data.outcomes.filter(o=>{
     if(outFrom && o.date < outFrom) return false;
     if(outTo && o.date > outTo) return false;
     if(outCat && o.category !== outCat) return false;
-    if(outSrc && o.source !== outSrc) return false;
+    if(outHolder && o.holder !== outHolder) return false;
     return true;
   });
-  const isIncomeFiltered = inFrom || inTo || inSrc;
-  const isOutcomeFiltered = outFrom || outTo || outCat || outSrc;
+  const isIncomeFiltered = inFrom || inTo || inSrc || inHolder;
+  const isOutcomeFiltered = outFrom || outTo || outCat || outHolder;
 
   // income list
   const inList = document.getElementById('incomeList');
@@ -670,7 +708,7 @@ function render(){
       <div class="entry${editingIncomeId===i.id?' editing':''}">
         <div class="tag" style="background:${SOURCE_COLOR[i.source]||'#eee'}">${SOURCE_ICON[i.source]||'💰'}</div>
         <div class="info">
-          <div class="t1">${i.source} <span style="font-weight:600;color:var(--ink-soft);font-size:11px;">• ${fmtDate(i.date)}</span></div>
+          <div class="t1">${i.source} → ${HOLDER_ICON[i.holder]||''} ${i.holder||'Papa'} <span style="font-weight:600;color:var(--ink-soft);font-size:11px;">• ${fmtDate(i.date)}</span></div>
           <div class="t2">${i.note ? i.note : '-'}</div>
         </div>
         <div class="amt" style="color:var(--mint-deep)">+${rupiah(i.amount)}</div>
@@ -691,7 +729,7 @@ function render(){
         <div class="tag" style="background:${CAT_COLOR[o.category]}22;">${CAT_ICON[o.category]||'💸'}</div>
         <div class="info">
           <div class="t1">${o.category} <span style="font-weight:600;color:var(--ink-soft);font-size:11px;">• ${fmtDate(o.date)}</span></div>
-          <div class="t2">${o.note ? o.note : '-'} · dari ${o.source}</div>
+          <div class="t2">${o.note ? o.note : '-'} · dari kas ${HOLDER_ICON[o.holder]||''} ${o.holder||'Papa'}</div>
         </div>
         <div class="amt" style="color:var(--pink-deep)">-${rupiah(o.amount)}</div>
         <div class="actions">
@@ -714,19 +752,19 @@ function render(){
   document.getElementById('rcIn').textContent = rupiah(totalIn);
   document.getElementById('rcOut').textContent = rupiah(totalOut);
 
-  // per source
-  const sources = ['Papa','Mama','Eldi','Koko'];
+  // per pemegang (siapa yang megang cash-nya sekarang)
+  const holders = ['Papa','Mama','Eldi','Koko'];
   let srcHtml = '';
-  sources.forEach(s=>{
-    const inAmt = data.incomes.filter(x=>x.source===s).reduce((a,b)=>a+b.amount,0);
-    const outAmt = data.outcomes.filter(x=>x.source===s).reduce((a,b)=>a+b.amount,0);
+  holders.forEach(h=>{
+    const inAmt = data.incomes.filter(x=>(x.holder||'Papa')===h).reduce((a,b)=>a+b.amount,0);
+    const outAmt = data.outcomes.filter(x=>(x.holder||'Papa')===h).reduce((a,b)=>a+b.amount,0);
     if(inAmt===0 && outAmt===0) return;
     const pct = inAmt>0 ? Math.min(100,(outAmt/inAmt)*100) : 0;
     srcHtml += `
       <div class="src-row">
-        <div class="head"><span>${SOURCE_ICON[s]} ${s}</span><span>Sisa ${rupiah(inAmt-outAmt)}</span></div>
+        <div class="head"><span>${HOLDER_ICON[h]||''} ${h}</span><span>Sisa ${rupiah(inAmt-outAmt)}</span></div>
         <div class="bar"><div class="used" style="width:${pct}%"></div></div>
-        <div class="sub">Masuk ${rupiah(inAmt)} · Kepake ${rupiah(outAmt)}</div>
+        <div class="sub">Dipegang ${rupiah(inAmt)} · Kepake ${rupiah(outAmt)}</div>
       </div>`;
   });
   document.getElementById('perSource').innerHTML = srcHtml || '<div class="empty">Belum ada data</div>';
@@ -739,14 +777,14 @@ function renderRecapHistory(){
   const to = document.getElementById('rc-filter-to').value;
   const type = document.getElementById('rc-filter-type').value;
   const cat = document.getElementById('rc-filter-category').value;
-  const src = document.getElementById('rc-filter-source').value;
+  const holder = document.getElementById('rc-filter-holder').value;
 
   let combined = [];
   if(type !== 'outcome'){
     data.incomes.forEach(i=>{
       if(from && i.date < from) return;
       if(to && i.date > to) return;
-      if(src && i.source !== src) return;
+      if(holder && (i.holder||'Papa') !== holder) return;
       combined.push({...i, _type:'income'});
     });
   }
@@ -754,7 +792,7 @@ function renderRecapHistory(){
     data.outcomes.forEach(o=>{
       if(from && o.date < from) return;
       if(to && o.date > to) return;
-      if(src && o.source !== src) return;
+      if(holder && (o.holder||'Papa') !== holder) return;
       if(cat && o.category !== cat) return;
       combined.push({...o, _type:'outcome'});
     });
@@ -762,7 +800,7 @@ function renderRecapHistory(){
   combined.sort((a,b)=> b.date.localeCompare(a.date));
 
   const wrap = document.getElementById('recapHistoryList');
-  const isFiltered = from || to || type || cat || src;
+  const isFiltered = from || to || type || cat || holder;
   if(combined.length===0){
     wrap.innerHTML = `<div class="empty">${isFiltered ? 'Nggak ada yang cocok sama filter 🔍' : 'Belum ada riwayat'}</div>`;
     return;
@@ -773,7 +811,7 @@ function renderRecapHistory(){
       <div class="entry">
         <div class="tag" style="background:${SOURCE_COLOR[x.source]||'#eee'}">${SOURCE_ICON[x.source]||'💰'}</div>
         <div class="info">
-          <div class="t1">${x.source} <span style="font-weight:600;color:var(--ink-soft);font-size:11px;">• ${fmtDate(x.date)}</span></div>
+          <div class="t1">${x.source} → ${x.holder||'Papa'} <span style="font-weight:600;color:var(--ink-soft);font-size:11px;">• ${fmtDate(x.date)}</span></div>
           <div class="t2">${x.note ? x.note : '-'}</div>
         </div>
         <div class="amt" style="color:var(--mint-deep)">+${rupiah(x.amount)}</div>
@@ -784,7 +822,7 @@ function renderRecapHistory(){
         <div class="tag" style="background:${CAT_COLOR[x.category]}22;">${CAT_ICON[x.category]||'💸'}</div>
         <div class="info">
           <div class="t1">${x.category} <span style="font-weight:600;color:var(--ink-soft);font-size:11px;">• ${fmtDate(x.date)}</span></div>
-          <div class="t2">${x.note ? x.note : '-'} · dari ${x.source}</div>
+          <div class="t2">${x.note ? x.note : '-'} · dari kas ${x.holder||'Papa'}</div>
         </div>
         <div class="amt" style="color:var(--pink-deep)">-${rupiah(x.amount)}</div>
       </div>`;
@@ -795,7 +833,7 @@ function resetRecapFilter(){
   document.getElementById('rc-filter-to').value = '';
   document.getElementById('rc-filter-type').value = '';
   document.getElementById('rc-filter-category').value = '';
-  document.getElementById('rc-filter-source').value = '';
+  document.getElementById('rc-filter-holder').value = '';
   render();
 }
 
